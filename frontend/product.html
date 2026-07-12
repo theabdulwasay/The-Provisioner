@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Product — The Provisioner</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Everyday Goods Co.</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<div class="container" style="padding:48px 24px; min-height: 70vh;">
+  <div id="product-detail" class="product-detail-container">Loading details...</div>
+
+  <div class="reviews-container">
+    <div id="reviews-section"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  if (!isLoggedIn()) {
+    window.location.href = "login.html";
+  }
+  renderNav();
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  let currentProduct = null;
+  let isWishlisted = false;
+
+  async function checkWishlistStatus() {
+    if (isLoggedIn()) {
+      try {
+        const list = await fetchWishlist();
+        isWishlisted = list.some(item => item.product_id === Number(id));
+      } catch (_) {}
+    }
+  }
+
+  async function toggleProductWishlist(btnEl) {
+    if (!isLoggedIn()) {
+      window.location.href = "login.html";
+      return;
+    }
+    try {
+      if (isWishlisted) {
+        await removeProductFromWishlist(id);
+        isWishlisted = false;
+        btnEl.classList.remove("active");
+        btnEl.innerHTML = "♡ Add to Wishlist";
+        showToast("Removed from wishlist");
+      } else {
+        await addProductToWishlist(id);
+        isWishlisted = true;
+        btnEl.classList.add("active");
+        btnEl.innerHTML = "♥ Wishlisted";
+        showToast("Added to wishlist");
+      }
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  async function load() {
+    try {
+      await checkWishlistStatus();
+      const { product, reviews } = await apiFetch(`/products/${id}`);
+      currentProduct = product;
+
+      // Determine stock status and class
+      let stockClass = "stock-in";
+      let stockText = `${product.stock} in stock`;
+      if (product.stock === 0) {
+        stockClass = "stock-out";
+        stockText = "Out of Stock";
+      } else if (product.stock <= 5) {
+        stockClass = "stock-low";
+        stockText = `Low Stock — Only ${product.stock} left`;
+      }
+
+      document.getElementById("product-detail").innerHTML = `
+        <div class="product-img-card">
+          <img src="${product.image_url}" alt="${product.name}"/>
+        </div>
+        <div class="product-info-card">
+          <div class="card-cat">${product.category_name || "General"}</div>
+          <h1>${product.name}</h1>
+          <p class="desc">${product.description || "No description provided."}</p>
+          <div class="price">${money(product.price)}</div>
+          
+          <div>
+            <span class="stock-badge ${stockClass}">${stockText}</span>
+          </div>
+
+          <div class="product-actions-panel">
+            <input type="number" id="qty" value="1" min="1" max="${product.stock || 1}" ${product.stock === 0 ? 'disabled' : ''} />
+            <button class="btn" ${product.stock === 0 ? "disabled" : ""} onclick="addToCart(currentProduct, Number(document.getElementById('qty').value))">
+              Add to Cart
+            </button>
+            <button class="btn btn-outline ${isWishlisted ? 'active' : ''}" onclick="toggleProductWishlist(this)">
+              ${isWishlisted ? '♥ Wishlisted' : '♡ Add to Wishlist'}
+            </button>
+          </div>
+        </div>
+      `;
+
+      const avgRating = reviews.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : 0;
+      const avgStarsText = avgRating ? "★".repeat(Math.round(avgRating)) + "☆".repeat(5 - Math.round(avgRating)) : "";
+
+      const reviewsHtml = reviews.length
+        ? reviews.map(r => `
+            <div class="review-item">
+              <div class="review-item-header">
+                <span class="review-user">${r.user_name}</span>
+                <span class="review-stars">${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}</span>
+              </div>
+              <p class="review-comment">${r.comment || "No comment left."}</p>
+            </div>`).join("")
+        : `<p style="color:var(--text-muted);">No reviews yet. Be the first to leave a review.</p>`;
+
+      document.getElementById("reviews-section").innerHTML = `
+        <h2 class="section-title">Customer Reviews</h2>
+        ${reviews.length ? `
+          <div class="reviews-summary" style="margin-bottom: 24px;">
+            <div style="font-size: 36px; font-weight: 800; font-family: var(--font-display);">${avgRating}</div>
+            <div>
+              <div class="review-stars" style="font-size: 18px;">${avgStarsText}</div>
+              <div style="font-size: 13px; color: var(--text-muted);">Based on ${reviews.length} reviews</div>
+            </div>
+          </div>
+        ` : ''}
+        <div class="reviews-list">${reviewsHtml}</div>
+        <div id="review-form-wrap"></div>
+      `;
+
+      if (isLoggedIn()) {
+        document.getElementById("review-form-wrap").innerHTML = `
+          <div class="form-card" style="margin: 32px 0 0; max-width: 100%; padding: 24px;">
+            <h3 style="font-family: var(--font-display); margin-bottom: 16px;">Write a Review</h3>
+            <form id="review-form">
+              <div class="field">
+                <label>Your Rating</label>
+                <select id="rating" style="max-width: 200px;">
+                  <option value="5">★★★★★ (5 Stars)</option>
+                  <option value="4">★★★★☆ (4 Stars)</option>
+                  <option value="3">★★★☆☆ (3 Stars)</option>
+                  <option value="2">★★☆☆☆ (2 Stars)</option>
+                  <option value="1">★☆☆☆☆ (1 Star)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Your Comment</label>
+                <textarea id="comment" rows="3" placeholder="Share your experience with this product..." required></textarea>
+              </div>
+              <button class="btn" type="submit">Submit Review</button>
+            </form>
+          </div>
+        `;
+        document.getElementById("review-form").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          try {
+            await apiFetch(`/products/${id}/reviews`, {
+              method: "POST",
+              body: JSON.stringify({ rating: Number(document.getElementById("rating").value), comment: document.getElementById("comment").value }),
+            });
+            showToast("Review submitted successfully");
+            load();
+          } catch (err) { showToast(err.message); }
+        });
+      } else {
+        document.getElementById("review-form-wrap").innerHTML = `
+          <div class="empty-state" style="padding: 24px; text-align: left; background: var(--bg-card);">
+            <p>Please <a href="login.html" style="color: var(--primary); font-weight: 600;">log in</a> to write a product review.</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      document.getElementById("product-detail").innerHTML = `<div class="empty-state"><h3>Product Not Found</h3><p>${err.message}</p></div>`;
+    }
+  }
+  load();
+</script>
+</body>
+</html>

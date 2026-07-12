@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Provisioner — Everyday Goods, Carefully Chosen</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Everyday Goods Co.</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<!-- Landing View (Visible to Guests) -->
+<div id="landing-view">
+  <section class="hero" style="text-align: center; padding: 80px 0; background: radial-gradient(circle at center, var(--primary-light), transparent 60%);">
+    <div class="container" style="max-width: 800px; margin: 0 auto;">
+      <div class="eyebrow" style="margin-bottom: 16px;">Welcome to The Provisioner</div>
+      <h1 style="font-size: clamp(36px, 6vw, 56px); margin-bottom: 20px;">Everyday Goods, Carefully Chosen</h1>
+      <p style="font-size: 18px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.6;">
+        Explore a hand-picked selection of high-quality electronics, kitchenware, apparel, and books designed to last. Sign in to your customer account to browse our full catalog and start shopping.
+      </p>
+      <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="login.html" class="btn" style="padding: 12px 28px; font-size: 16px;">Log In to Shop</a>
+        <a href="#about-us" class="btn btn-outline" style="padding: 12px 28px; font-size: 16px;">About Our Co.</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Shop View (Visible to Logged-in Customers) -->
+<div class="container layout" id="shop-view" style="display: none;">
+  <aside class="filters">
+    <h3>Filter Products</h3>
+    
+    <div class="group">
+      <h3 style="font-size: 13px; border-bottom: none; padding-bottom: 0; margin-bottom: 8px;">Search</h3>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search goods..." />
+      </div>
+    </div>
+    
+    <div class="group">
+      <h3 style="font-size:13px; border-bottom: none; padding-bottom: 0; margin-bottom: 8px;">Category</h3>
+      <div id="category-list"></div>
+    </div>
+
+    <div class="group">
+      <h3 style="font-size:13px; border-bottom: none; padding-bottom: 0; margin-bottom: 8px;">Price Range</h3>
+      <div class="price-range-inputs">
+        <input type="number" id="price-min" placeholder="Min $" min="0" />
+        <input type="number" id="price-max" placeholder="Max $" min="0" />
+      </div>
+    </div>
+    
+    <div class="group">
+      <h3 style="font-size:13px; border-bottom: none; padding-bottom: 0; margin-bottom: 8px;">Sort by</h3>
+      <div class="select-wrapper">
+        <select id="sort-select">
+          <option value="newest">Newest Arrivals</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="name_asc">Name: A–Z</option>
+        </select>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div id="product-grid" class="product-grid"></div>
+    <div id="pagination" class="pagination"></div>
+  </main>
+</div>
+
+<!-- About Us Section (Always visible for info) -->
+<section id="about-us" style="padding: 80px 0; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container" style="max-width: 900px;">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <span class="eyebrow" style="color: var(--primary); font-weight: 700; text-transform: uppercase;">Our Story</span>
+      <h2 style="font-family: var(--font-display); font-size: 36px; font-weight: 800; margin-top: 8px;">About The Provisioner</h2>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 32px; font-size: 15px; color: var(--text-muted); line-height: 1.8;">
+      <p>
+        Founded in 2026, <strong>The Provisioner</strong> was born out of a simple idea: that everyday objects should be crafted with care, function reliably, and stand the test of time. In a world of disposable goods, we curate items that earn their place on your shelf, in your kitchen, or in your travel pack.
+      </p>
+      <p>
+        Every single product in our catalog—from noise-cancelling headphones to stainless steel cookware and classic sweaters—undergoes rigorous screening for quality, materials, and ethical manufacturing. We partner with designers who share our commitment to sustainability and timeless aesthetics.
+      </p>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 24px;">
+        <div style="background: var(--bg-app); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+          <div style="font-size: 24px; margin-bottom: 12px;">🌿</div>
+          <h4 style="color: var(--text-main); font-family: var(--font-display); margin-bottom: 8px;">Timeless Quality</h4>
+          <p style="font-size: 13px;">We prioritize materials like merino wool, stainless steel, and mechanical switches that age gracefully and operate reliably.</p>
+        </div>
+        <div style="background: var(--bg-app); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+          <div style="font-size: 24px; margin-bottom: 12px;">🔍</div>
+          <h4 style="color: var(--text-main); font-family: var(--font-display); margin-bottom: 8px;">Strict Curation</h4>
+          <p style="font-size: 13px;">Our list is small because we only stock products that are genuinely useful, avoiding unnecessary clutter and consumer bloat.</p>
+        </div>
+        <div style="background: var(--bg-app); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+          <div style="font-size: 24px; margin-bottom: 12px;">🤝</div>
+          <h4 style="color: var(--text-main); font-family: var(--font-display); margin-bottom: 8px;">Direct Support</h4>
+          <p style="font-size: 13px;">Every purchase is backed by our customer-first support. We assist with replacements, shipping tracking, and product advice.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Branch Information Section (Always visible for info) -->
+<section id="branches" style="padding: 80px 0; background: var(--bg-app);">
+  <div class="container">
+    <div style="text-align: center; margin-bottom: 48px;">
+      <span class="eyebrow" style="color: var(--primary); font-weight: 700; text-transform: uppercase;">Locations</span>
+      <h2 style="font-family: var(--font-display); font-size: 36px; font-weight: 800; margin-top: 8px;">Our Retail Branches</h2>
+      <p style="color: var(--text-muted); margin-top: 8px;">Stop by any of our physical outlets to test our catalog in person.</p>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+      <div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+        <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--primary);">Metropolis Flagship</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
+          📍 100 Executive Way, Suite A<br/>
+          Metropolis, NY 10001
+        </p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          📞 +1 (555) 0100<br/>
+          ✉️ flagship@provisioner.com
+        </p>
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-main); border-top: 1px solid var(--border); padding-top: 12px;">
+          🕒 Mon - Sat: 9am - 8pm<br/>
+          Sun: 11am - 5pm
+        </div>
+      </div>
+
+      <div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+        <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--primary);">Springfield Annex</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
+          📍 789 Evergreen Terrace<br/>
+          Springfield, IL 62704
+        </p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          📞 +1 (555) 0199<br/>
+          ✉️ annex@provisioner.com
+        </p>
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-main); border-top: 1px solid var(--border); padding-top: 12px;">
+          🕒 Mon - Fri: 10am - 7pm<br/>
+          Sat - Sun: 10am - 5pm
+        </div>
+      </div>
+
+      <div style="background: var(--bg-card); padding: 32px; border-radius: var(--radius-lg); border: 1px solid var(--border); box-shadow: var(--shadow-sm);">
+        <h3 style="font-family: var(--font-display); font-size: 20px; margin-bottom: 16px; color: var(--primary);">Emerald Distribution</h3>
+        <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.6;">
+          📍 450 Logistics Blvd, Dock 12<br/>
+          Seattle, WA 98101
+        </p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          📞 +1 (555) 0212<br/>
+          ✉️ seattle@provisioner.com
+        </p>
+        <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: var(--text-main); border-top: 1px solid var(--border); padding-top: 12px;">
+          🕒 Mon - Fri: 8am - 6pm<br/>
+          Sat: Closed
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let currentPage = 1;
+  let currentCategory = "";
+  let currentSort = "newest";
+  let currentSearch = "";
+  let minPrice = "";
+  let maxPrice = "";
+  let wishlistIds = new Set();
+
+  async function loadCategories() {
+    const { categories } = await apiFetch("/products/categories");
+    const list = document.getElementById("category-list");
+    list.innerHTML = `<label><input type="radio" name="cat" value="" checked> All Categories</label>` +
+      categories.map(c => `<label><input type="radio" name="cat" value="${c.name}"> ${c.name}</label>`).join("");
+    list.querySelectorAll("input[name=cat]").forEach(input => {
+      input.addEventListener("change", (e) => { 
+        currentCategory = e.target.value; 
+        currentPage = 1; 
+        loadProducts(); 
+      });
+    });
+  }
+
+  async function loadWishlistIds() {
+    if (isLoggedIn()) {
+      try {
+        const list = await fetchWishlist();
+        wishlistIds = new Set(list.map(item => item.product_id));
+      } catch (err) {
+        console.error("Failed to load wishlist:", err);
+      }
+    }
+  }
+
+  async function toggleWishlist(productId, btnEl) {
+    if (!isLoggedIn()) {
+      window.location.href = "login.html";
+      return;
+    }
+    try {
+      if (wishlistIds.has(productId)) {
+        await removeProductFromWishlist(productId);
+        wishlistIds.delete(productId);
+        btnEl.classList.remove("active");
+        btnEl.innerHTML = "♡";
+        showToast("Removed from wishlist");
+      } else {
+        await addProductToWishlist(productId);
+        wishlistIds.add(productId);
+        btnEl.classList.add("active");
+        btnEl.innerHTML = "♥";
+        showToast("Added to wishlist");
+      }
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  async function loadProducts() {
+    const grid = document.getElementById("product-grid");
+    grid.innerHTML = `<div class="empty-state"><h3>Loading catalog...</h3><p>Please wait while we stock the shelves.</p></div>`;
+    
+    await loadWishlistIds();
+
+    const params = new URLSearchParams({ page: currentPage, limit: 9, sort: currentSort });
+    if (currentCategory) params.set("category", currentCategory);
+    if (currentSearch) params.set("search", currentSearch);
+    if (minPrice) params.set("minPrice", minPrice);
+    if (maxPrice) params.set("maxPrice", maxPrice);
+
+    try {
+      const { products, total, limit } = await apiFetch(`/products?${params.toString()}`);
+      if (!products || !products.length) {
+        grid.innerHTML = `<div class="empty-state"><h3>No products found</h3><p>Try clearing some search terms or adjusting filters.</p></div>`;
+        document.getElementById("pagination").innerHTML = "";
+        return;
+      }
+      
+      grid.innerHTML = products.map(p => {
+        const isWish = wishlistIds.has(p.id);
+        const starsText = p.avg_rating ? "★".repeat(Math.round(p.avg_rating)) + "☆".repeat(5 - Math.round(p.avg_rating)) : "";
+        const reviewsText = p.review_count ? `(${p.review_count})` : "No reviews";
+
+        return `
+          <div class="card">
+            <button class="btn-wishlist-toggle ${isWish ? 'active' : ''}" onclick="toggleWishlist(${p.id}, this)">
+              ${isWish ? '♥' : '♡'}
+            </button>
+            <div class="card-img-wrap">
+              <a href="product.html?id=${p.id}"><img src="${p.image_url}" alt="${p.name}" loading="lazy"/></a>
+            </div>
+            <div class="card-body">
+              <div class="card-cat">${p.category_name || "General"}</div>
+              <h4><a href="product.html?id=${p.id}">${p.name}</a></h4>
+              <div class="card-rating">
+                <span class="stars">${starsText || '☆☆☆☆☆'}</span>
+                <span>${p.avg_rating ? `${p.avg_rating} ${reviewsText}` : reviewsText}</span>
+              </div>
+              <div class="card-footer">
+                <div class="price">${money(p.price)}</div>
+                <button class="btn btn-sm" onclick='addToCart(${JSON.stringify(p)})'>+ Add</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      const pag = document.getElementById("pagination");
+      pag.innerHTML = Array.from({length: totalPages}, (_, i) => i + 1).map(n =>
+        `<button class="btn ${n === currentPage ? '' : 'btn-outline'} btn-sm" onclick="currentPage=${n};loadProducts();">${n}</button>`
+      ).join("");
+    } catch (err) {
+      grid.innerHTML = `<div class="empty-state"><h3>Could not connect</h3><p>${err.message}</p></div>`;
+    }
+  }
+
+  document.getElementById("sort-select").addEventListener("change", e => { 
+    currentSort = e.target.value; 
+    loadProducts(); 
+  });
+
+  let searchTimer;
+  document.getElementById("search-input").addEventListener("input", e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { 
+      currentSearch = e.target.value; 
+      currentPage = 1; 
+      loadProducts(); 
+    }, 300);
+  });
+
+  let priceTimer;
+  const triggerPriceFilter = () => {
+    clearTimeout(priceTimer);
+    priceTimer = setTimeout(() => {
+      minPrice = document.getElementById("price-min").value;
+      maxPrice = document.getElementById("price-max").value;
+      currentPage = 1;
+      loadProducts();
+    }, 400);
+  };
+
+  document.getElementById("price-min").addEventListener("input", triggerPriceFilter);
+  document.getElementById("price-max").addEventListener("input", triggerPriceFilter);
+
+  renderNav();
+  
+  if (isLoggedIn()) {
+    document.getElementById("landing-view").style.display = "none";
+    document.getElementById("shop-view").style.display = "grid";
+    loadCategories();
+    loadProducts();
+  } else {
+    document.getElementById("landing-view").style.display = "block";
+    document.getElementById("shop-view").style.display = "none";
+  }
+</script>
+</body>
+</html>

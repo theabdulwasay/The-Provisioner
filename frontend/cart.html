@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Your Cart — The Provisioner</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Everyday Goods Co.</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<div class="container" style="padding:48px 24px; min-height: 70vh;">
+  <h1 style="font-family: var(--font-display); margin-bottom: 24px;">Shopping Cart</h1>
+  <div id="cart-grid" class="cart-layout">
+    <div class="table-responsive" id="cart-items"></div>
+    <div id="checkout-panel" class="summary-panel"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  if (!isLoggedIn()) { window.location.href = "login.html"; }
+  renderNav();
+  let appliedCoupon = null;
+
+  function renderCart() {
+    const items = getCart();
+    const container = document.getElementById("cart-items");
+    const panel = document.getElementById("checkout-panel");
+
+    if (!items.length) {
+      document.getElementById("cart-grid").innerHTML = `
+        <div class="empty-state">
+          <h3>Your cart is empty</h3>
+          <p>You haven't added any goods to your cart yet.</p>
+          <a href="index.html" class="btn" style="margin-top: 16px;">Go Shopping</a>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(i => `
+            <tr>
+              <td class="product-cell">
+                <img src="${i.image_url}" alt="${i.name}"/>
+                <span>${i.name}</span>
+              </td>
+              <td>${money(i.price)}</td>
+              <td>
+                <div class="qty-control">
+                  <button onclick="changeQty(${i.product_id}, ${i.quantity - 1})">-</button>
+                  <input type="text" readonly value="${i.quantity}" />
+                  <button onclick="changeQty(${i.product_id}, ${i.quantity + 1})">+</button>
+                </div>
+              </td>
+              <td>${money(i.price * i.quantity)}</td>
+              <td>
+                <button class="btn btn-outline btn-sm" onclick="removeFromCart(${i.product_id}); renderCart();">Remove</button>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+
+    const subtotal = cartTotal();
+    const discount = appliedCoupon ? appliedCoupon.discount_amount : 0;
+    const finalTotal = subtotal - discount;
+
+    panel.innerHTML = `
+      <h3>Order Summary</h3>
+      <div class="summary-row" style="margin-top: 16px;">
+        <span>Subtotal</span>
+        <span>${money(subtotal)}</span>
+      </div>
+      ${appliedCoupon ? `
+        <div class="summary-row" style="color: var(--success);">
+          <span>Discount (${appliedCoupon.code})</span>
+          <span>-${money(discount)}</span>
+        </div>
+      ` : ''}
+      <div class="summary-row total">
+        <span>Total</span>
+        <span>${money(finalTotal)}</span>
+      </div>
+
+      <div class="coupon-section">
+        <label style="font-size: 13px; font-weight: 600;">Promo Code</label>
+        <div class="coupon-input-group">
+          <input type="text" id="coupon-code-input" placeholder="e.g. SAVE10" value="${appliedCoupon ? appliedCoupon.code : ''}" />
+          <button class="btn btn-sm" onclick="applyCouponCode()">Apply</button>
+        </div>
+        <div id="coupon-status" style="margin-top: 6px; font-size: 13px;">
+          ${appliedCoupon ? `<span style="color: var(--success);">Coupon applied! ${money(discount)} saved.</span>` : ''}
+        </div>
+      </div>
+
+      <button class="btn btn-block" onclick="startCheckout()">Proceed to Checkout</button>
+      <div id="checkout-form-wrap"></div>
+    `;
+  }
+
+  function changeQty(productId, newQty) {
+    updateCartQuantity(productId, newQty);
+    if (appliedCoupon) {
+      // Re-validate coupon since subtotal changed
+      applyCouponCode(true);
+    } else {
+      renderCart();
+    }
+  }
+
+  async function applyCouponCode(silent = false) {
+    const inputVal = document.getElementById("coupon-code-input")?.value || "";
+    const code = inputVal.trim().toUpperCase();
+    const statusDiv = document.getElementById("coupon-status");
+    
+    if (!code) {
+      appliedCoupon = null;
+      if (statusDiv) statusDiv.innerHTML = "";
+      renderCart();
+      return;
+    }
+
+    try {
+      const data = await validateDiscountCoupon(code, cartTotal());
+      appliedCoupon = {
+        code: data.code,
+        discount_amount: data.discount_amount,
+        new_total: data.new_total
+      };
+      if (statusDiv) statusDiv.innerHTML = `<span style="color: var(--success);">Coupon applied! ${money(data.discount_amount)} saved.</span>`;
+      renderCart();
+    } catch (err) {
+      appliedCoupon = null;
+      if (statusDiv) statusDiv.innerHTML = `<span style="color: var(--error);">${err.message}</span>`;
+      if (!silent) {
+        showToast(err.message);
+      }
+      renderCart();
+    }
+  }
+
+  function startCheckout() {
+    if (!isLoggedIn()) { 
+      window.location.href = "login.html"; 
+      return; 
+    }
+    const user = getCurrentUser();
+    
+    document.getElementById("checkout-form-wrap").innerHTML = `
+      <form id="checkout-form" style="margin-top: 24px; border-top: 1px solid var(--border); padding-top: 16px;">
+        <h4 style="font-family: var(--font-display); margin-bottom: 12px;">Delivery Information</h4>
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="text" id="shipping-phone" required placeholder="+1 (555) 0123" value="${user.phone || ''}"/>
+        </div>
+        <div class="field">
+          <label>Shipping Address</label>
+          <textarea id="shipping-address" rows="3" required placeholder="123 Main St, Apt 4B, New York, NY">${user.default_address || ''}</textarea>
+        </div>
+        <button class="btn btn-block" type="submit">Place Order</button>
+      </form>
+    `;
+    
+    document.getElementById("checkout-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const items = getCart().map(i => ({ product_id: i.product_id, quantity: i.quantity }));
+      const shipping_address = document.getElementById("shipping-address").value;
+      const phone = document.getElementById("shipping-phone").value;
+      
+      try {
+        const payload = {
+          items,
+          shipping_address: `${shipping_address} (Phone: ${phone})`
+        };
+        if (appliedCoupon) {
+          payload.coupon_code = appliedCoupon.code;
+        }
+
+        const { order } = await apiFetch("/orders", {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        
+        clearCart();
+        showToast(`Order #${order.id} placed successfully!`);
+        setTimeout(() => window.location.href = "orders.html", 900);
+      } catch (err) { 
+        showToast(err.message); 
+      }
+    });
+  }
+
+  renderCart();
+</script>
+</body>
+</html>

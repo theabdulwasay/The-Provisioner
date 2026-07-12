@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Wishlist — The Provisioner</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Everyday Goods Co.</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<div class="container" style="padding: 48px 24px; min-height: 70vh;">
+  <h1 style="font-family: var(--font-display); margin-bottom: 24px;">My Wishlist</h1>
+  <div id="wishlist-grid" class="product-grid">Loading wishlist...</div>
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  if (!isLoggedIn()) { window.location.href = "login.html"; }
+  renderNav();
+
+  async function loadWishlist() {
+    const grid = document.getElementById("wishlist-grid");
+    if (!isLoggedIn()) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <h3>Log in to view wishlist</h3>
+          <p>Create an account or sign in to save your favorite goods.</p>
+          <a href="login.html" class="btn" style="margin-top: 16px;">Log In</a>
+        </div>
+      `;
+      return;
+    }
+
+    try {
+      const items = await fetchWishlist();
+      if (!items || !items.length) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <h3>Your wishlist is empty</h3>
+            <p>Tap the heart icon on any product in the shop to save it here.</p>
+            <a href="index.html" class="btn" style="margin-top: 16px;">Go Shopping</a>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = items.map(p => {
+        const starsText = p.avg_rating ? "★".repeat(Math.round(p.avg_rating)) + "☆".repeat(5 - Math.round(p.avg_rating)) : "";
+        const reviewsText = p.review_count ? `(${p.review_count})` : "No reviews";
+        
+        // Reconstruct a product object matching what cart expects
+        const productObj = {
+          id: p.product_id,
+          name: p.name,
+          price: p.price,
+          image_url: p.image_url,
+          stock: p.stock
+        };
+
+        return `
+          <div class="card" id="wishcard-${p.product_id}">
+            <button class="btn-wishlist-toggle active" onclick="removeFromWishlistPage(${p.product_id})">
+              ♥
+            </button>
+            <div class="card-img-wrap">
+              <a href="product.html?id=${p.product_id}"><img src="${p.image_url}" alt="${p.name}" loading="lazy"/></a>
+            </div>
+            <div class="card-body">
+              <div class="card-cat">${p.category_name || "General"}</div>
+              <h4><a href="product.html?id=${p.product_id}">${p.name}</a></h4>
+              <div class="card-rating">
+                <span class="stars">${starsText || '☆☆☆☆☆'}</span>
+                <span>${p.avg_rating ? `${p.avg_rating} ${reviewsText}` : reviewsText}</span>
+              </div>
+              <div class="card-footer">
+                <div class="price">${money(p.price)}</div>
+                <button class="btn btn-sm" onclick='addToCart(${JSON.stringify(productObj)})'>+ Add</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    } catch (err) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;"><h3>Failed to load wishlist</h3><p>${err.message}</p></div>`;
+    }
+  }
+
+  async function removeFromWishlistPage(productId) {
+    try {
+      await removeProductFromWishlist(productId);
+      const cardEl = document.getElementById(`wishcard-${productId}`);
+      if (cardEl) cardEl.remove();
+      showToast("Removed from wishlist");
+      
+      // Check if grid is now empty
+      const grid = document.getElementById("wishlist-grid");
+      if (grid.children.length === 0) {
+        loadWishlist(); // Triggers empty state layout
+      }
+    } catch (err) {
+      showToast(err.message);
+    }
+  }
+
+  loadWishlist();
+</script>
+</body>
+</html>

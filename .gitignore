@@ -1,0 +1,20 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Env
+.env
+
+# Database
+backend/data/*.db
+backend/data/*.db-wal
+backend/data/*.db-shm
+backend/tests/test.db*
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log

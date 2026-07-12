@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard — The Provisioner</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Admin Dashboard</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<div class="container" style="padding:40px 24px; min-height: 80vh;">
+  <h1 style="font-family: var(--font-display); margin-bottom: 24px;">Admin Dashboard</h1>
+  
+  <div class="admin-tab-nav">
+    <button class="admin-tab-btn active" onclick="switchTab('tab-stats', this)">Dashboard Stats</button>
+    <button class="admin-tab-btn" onclick="switchTab('tab-orders', this)">Orders Management</button>
+    <button class="admin-tab-btn" onclick="switchTab('tab-products', this)">Product Directory</button>
+    <button class="admin-tab-btn" onclick="switchTab('tab-categories', this)">Categories Control</button>
+    <button class="admin-tab-btn" onclick="switchTab('tab-coupons', this)">Coupon Codes</button>
+  </div>
+
+  <!-- Tab 1: Dashboard Stats -->
+  <div id="tab-stats" class="admin-tab-panel active">
+    <div class="stat-grid" id="stat-grid"></div>
+    
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 32px;">
+      <div>
+        <h3 class="section-title" style="margin-top:0;">Low Stock Alerts</h3>
+        <div class="table-responsive">
+          <table id="low-stock-table">
+            <thead><tr><th>Product</th><th>Current Stock</th></tr></thead>
+            <tbody><tr><td colspan="2" style="text-align:center;color:var(--text-muted);">Loading stock levels...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <h3 class="section-title" style="margin-top:0;">Top Performing Products</h3>
+        <div class="table-responsive">
+          <table id="top-products-table">
+            <thead><tr><th>Product Name</th><th>Units Sold</th><th>Revenue</th></tr></thead>
+            <tbody><tr><td colspan="3" style="text-align:center;color:var(--text-muted);">Loading performers...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Orders Management -->
+  <div id="tab-orders" class="admin-tab-panel">
+    <h2 class="section-title" style="margin-top: 0;">Manage Orders</h2>
+    <div class="table-responsive" id="orders-table">Loading orders...</div>
+  </div>
+
+  <!-- Tab 3: Product Directory -->
+  <div id="tab-products" class="admin-tab-panel">
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start;">
+      <div>
+        <h2 class="section-title" style="margin-top: 0;">Product Directory</h2>
+        <div class="table-responsive" id="products-table">Loading catalog...</div>
+      </div>
+      
+      <div class="form-card" style="margin: 0; max-width: 100%; padding: 24px;">
+        <h3 style="font-family: var(--font-display); margin-bottom: 16px;">Add New Product</h3>
+        <form id="product-form">
+          <div class="field"><label>Product Name</label><input type="text" id="p-name" required/></div>
+          <div class="field"><label>Description</label><textarea id="p-desc" rows="2" required></textarea></div>
+          <div class="field"><label>Price ($)</label><input type="number" step="0.01" id="p-price" required/></div>
+          <div class="field"><label>Stock Count</label><input type="number" id="p-stock" required/></div>
+          <div class="field"><label>Category</label><select id="p-category"></select></div>
+          <div class="field"><label>Image URL</label><input type="text" id="p-image" placeholder="https://picsum.photos/seed/name/400/300"/></div>
+          <button class="btn btn-block" type="submit">Publish Product</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Categories Control -->
+  <div id="tab-categories" class="admin-tab-panel">
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start;">
+      <div>
+        <h2 class="section-title" style="margin-top: 0;">Categories</h2>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>Category Name</th><th>Action</th></tr></thead>
+            <tbody id="categories-admin-list">
+              <tr><td colspan="2" style="text-align:center;color:var(--text-muted);">Loading categories...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="form-card" style="margin: 0; max-width: 100%; padding: 24px;">
+        <h3 style="font-family: var(--font-display); margin-bottom: 16px;">Create Category</h3>
+        <form id="category-form">
+          <div class="field">
+            <label>Category Name</label>
+            <input type="text" id="c-name" placeholder="e.g. Health & Fitness" required />
+          </div>
+          <button class="btn btn-block" type="submit">Create Category</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 5: Coupon Codes -->
+  <div id="tab-coupons" class="admin-tab-panel">
+    <div style="display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start;">
+      <div>
+        <h2 class="section-title" style="margin-top: 0;">Active Promotion Coupons</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Min Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="coupons-admin-list">
+              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);">Loading coupons...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div class="form-card" style="margin: 0; max-width: 100%; padding: 24px;">
+        <h3 style="font-family: var(--font-display); margin-bottom: 16px;">Generate Coupon</h3>
+        <form id="coupon-form">
+          <div class="field">
+            <label>Coupon Code</label>
+            <input type="text" id="coup-code" placeholder="e.g. WELCOME10" required />
+          </div>
+          <div class="field">
+            <label>Discount Type</label>
+            <select id="coup-type">
+              <option value="percentage">Percentage (%)</option>
+              <option value="fixed">Fixed Amount ($)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Discount Value</label>
+            <input type="number" step="0.01" id="coup-value" placeholder="e.g. 10" required />
+          </div>
+          <div class="field">
+            <label>Minimum Order Total ($)</label>
+            <input type="number" step="0.01" id="coup-min" value="0" required />
+          </div>
+          <button class="btn btn-block" type="submit">Generate Coupon</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  renderNav();
+  if (requireAdmin()) init();
+
+  function switchTab(tabId, btnEl) {
+    document.querySelectorAll(".admin-tab-panel").forEach(el => el.classList.remove("active"));
+    document.querySelectorAll(".admin-tab-btn").forEach(el => el.classList.remove("active"));
+    
+    document.getElementById(tabId).classList.add("active");
+    btnEl.classList.add("active");
+  }
+
+  async function init() {
+    await loadStats();
+    await loadOrders();
+    await loadCategories();
+    await loadProducts();
+    await loadCoupons();
+
+    // Product form submission
+    document.getElementById("product-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await apiFetch("/products", {
+          method: "POST",
+          body: JSON.stringify({
+            name: document.getElementById("p-name").value,
+            description: document.getElementById("p-desc").value,
+            price: Number(document.getElementById("p-price").value),
+            stock: Number(document.getElementById("p-stock").value),
+            category_id: Number(document.getElementById("p-category").value) || null,
+            image_url: document.getElementById("p-image").value || `https://picsum.photos/seed/${Date.now()}/400/300`,
+          }),
+        });
+        showToast("Product published successfully");
+        e.target.reset();
+        await loadProducts();
+        await loadStats();
+      } catch (err) { showToast(err.message); }
+    });
+
+    // Category form submission
+    document.getElementById("category-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await apiFetch("/products/categories", {
+          method: "POST",
+          body: JSON.stringify({ name: document.getElementById("c-name").value }),
+        });
+        showToast("Category created successfully");
+        e.target.reset();
+        await loadCategories();
+      } catch (err) { showToast(err.message); }
+    });
+
+    // Coupon form submission
+    document.getElementById("coupon-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await apiFetch("/coupons", {
+          method: "POST",
+          body: JSON.stringify({
+            code: document.getElementById("coup-code").value,
+            discount_type: document.getElementById("coup-type").value,
+            value: Number(document.getElementById("coup-value").value),
+            min_total: Number(document.getElementById("coup-min").value),
+          }),
+        });
+        showToast("Coupon generated successfully");
+        e.target.reset();
+        await loadCoupons();
+      } catch (err) { showToast(err.message); }
+    });
+  }
+
+  async function loadStats() {
+    const stats = await apiFetch("/admin/stats");
+    document.getElementById("stat-grid").innerHTML = `
+      <div class="stat-card"><div class="label">Gross Revenue</div><div class="value">${money(stats.totalRevenue)}</div></div>
+      <div class="stat-card"><div class="label">Total Orders</div><div class="value">${stats.totalOrders}</div></div>
+      <div class="stat-card"><div class="label">Registered Customers</div><div class="value">${stats.totalCustomers}</div></div>
+      <div class="stat-card"><div class="label">Products Active</div><div class="value">${stats.totalProducts}</div></div>
+    `;
+
+    // Render low stock alerts
+    const lowStockBody = document.querySelector("#low-stock-table tbody");
+    if (stats.lowStock && stats.lowStock.length) {
+      lowStockBody.innerHTML = stats.lowStock.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td style="color:var(--error); font-weight:700;">${p.stock} remaining</td>
+        </tr>
+      `).join("");
+    } else {
+      lowStockBody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:var(--text-muted);">All items well stocked.</td></tr>`;
+    }
+
+    // Render top performing products
+    const topProdBody = document.querySelector("#top-products-table tbody");
+    if (stats.topProducts && stats.topProducts.length) {
+      topProdBody.innerHTML = stats.topProducts.map(p => `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.units_sold} sold</td>
+          <td>${money(p.revenue)}</td>
+        </tr>
+      `).join("");
+    } else {
+      topProdBody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--text-muted);">No sales data available.</td></tr>`;
+    }
+  }
+
+  async function loadOrders() {
+    const { orders } = await apiFetch("/orders/admin/all");
+    document.getElementById("orders-table").innerHTML = orders.length ? `
+      <table>
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Gross Total</th><th>State Action</th></tr></thead>
+        <tbody>
+          ${orders.map(o => `
+            <tr>
+              <td>#${o.id}</td>
+              <td><strong>${o.customer_name}</strong><br/><small style="color:var(--text-muted)">${o.customer_email}</small></td>
+              <td>${new Date(o.created_at).toLocaleDateString()}</td>
+              <td>${money(o.total)}</td>
+              <td>
+                <select onchange="updateStatus(${o.id}, this.value)" style="padding:6px 10px; border:1px solid var(--border); border-radius:var(--radius-sm); outline:none;">
+                  ${["pending","paid","shipped","delivered","cancelled"].map(s => `<option value="${s}" ${s===o.status?"selected":""}>${s}</option>`).join("")}
+                </select>
+              </td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    ` : `<div class="empty-state">No orders have been placed yet.</div>`;
+  }
+
+  async function updateStatus(orderId, status) {
+    try {
+      await apiFetch(`/orders/${orderId}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+      showToast(`Order #${orderId} status is now ${status}`);
+      await loadStats();
+    } catch (err) { showToast(err.message); }
+  }
+
+  async function loadCategories() {
+    const { categories } = await apiFetch("/products/categories");
+    
+    // Category select dropdown for adding products
+    document.getElementById("p-category").innerHTML = categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("");
+    
+    // Categories tab listing
+    const listBody = document.getElementById("categories-admin-list");
+    if (categories.length) {
+      listBody.innerHTML = categories.map(c => `
+        <tr>
+          <td><strong>${c.name}</strong></td>
+          <td><button class="btn btn-outline btn-danger btn-sm" onclick="deleteCategory(${c.id})">Delete</button></td>
+        </tr>
+      `).join("");
+    } else {
+      listBody.innerHTML = `<tr><td colspan="2" style="text-align:center;color:var(--text-muted);">No categories created.</td></tr>`;
+    }
+  }
+
+  async function deleteCategory(id) {
+    if (!confirm("Delete this category? Products associated with it might prevent deletion.")) return;
+    try {
+      await apiFetch(`/products/categories/${id}`, { method: "DELETE" });
+      showToast("Category removed successfully");
+      await loadCategories();
+    } catch (err) { showToast(err.message); }
+  }
+
+  async function loadCoupons() {
+    try {
+      const { coupons } = await apiFetch("/coupons");
+      const listBody = document.getElementById("coupons-admin-list");
+      if (coupons && coupons.length) {
+        listBody.innerHTML = coupons.map(c => `
+          <tr>
+            <td><strong style="text-transform: uppercase;">${c.code}</strong></td>
+            <td style="text-transform:capitalize;">${c.discount_type}</td>
+            <td>${c.discount_type === 'percentage' ? `${c.value}%` : money(c.value)}</td>
+            <td>${money(c.min_total)}</td>
+            <td><button class="btn btn-outline btn-danger btn-sm" onclick="deleteCoupon(${c.id})">Remove</button></td>
+          </tr>
+        `).join("");
+      } else {
+        listBody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);">No coupons created yet.</td></tr>`;
+      }
+    } catch (err) {
+      showToast("Failed to load coupons: " + err.message);
+    }
+  }
+
+  async function deleteCoupon(id) {
+    if (!confirm("Deactivate and remove this promotional coupon?")) return;
+    try {
+      await apiFetch(`/coupons/${id}`, { method: "DELETE" });
+      showToast("Coupon deactivated");
+      await loadCoupons();
+    } catch (err) { showToast(err.message); }
+  }
+
+  async function loadProducts() {
+    const { products } = await apiFetch("/products?limit=50&sort=newest");
+    document.getElementById("products-table").innerHTML = `
+      <table>
+        <thead><tr><th>Product Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Action</th></tr></thead>
+        <tbody>
+          ${products.map(p => `
+            <tr>
+              <td><strong>${p.name}</strong></td>
+              <td>${p.category_name || "—"}</td>
+              <td>${money(p.price)}</td>
+              <td>${p.stock} units</td>
+              <td><button class="btn btn-outline btn-danger btn-sm" onclick="deleteProduct(${p.id})">Delete</button></td>
+            </tr>
+          `).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm("Permanently delete this product from the inventory?")) return;
+    try {
+      await apiFetch(`/products/${id}`, { method: "DELETE" });
+      showToast("Product deleted");
+      await loadProducts();
+      await loadStats();
+    } catch (err) { showToast(err.message); }
+  }
+</script>
+</body>
+</html>

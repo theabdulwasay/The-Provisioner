@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - PORT=4000
+      - JWT_SECRET=change_this_in_production
+      - JWT_EXPIRES_IN=7d
+      - DB_PATH=/app/data/store.db
+      - NODE_ENV=production
+    volumes:
+      - backend_data:/app/data
+
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+volumes:
+  backend_data:

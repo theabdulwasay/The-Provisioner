@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Profile — The Provisioner</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="container bar">
+    <a href="index.html" class="brand">The Provisioner<small>Everyday Goods Co.</small></a>
+    <nav class="nav-links" id="nav-links"></nav>
+  </div>
+</header>
+
+<div class="container" style="padding: 48px 24px; min-height: 70vh;">
+  <div class="form-card" style="max-width: 580px; margin: 0 auto; padding: 40px;">
+    <h2>Edit Profile</h2>
+    <div id="profile-status" style="margin-bottom: 20px;"></div>
+    
+    <form id="profile-form">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="prof-name" required />
+      </div>
+      
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="prof-email" required />
+      </div>
+
+      <div class="field">
+        <label>Phone Number</label>
+        <input type="text" id="prof-phone" placeholder="e.g. +1 (555) 0123" />
+      </div>
+
+      <div class="field">
+        <label>Default Shipping Address</label>
+        <textarea id="prof-address" rows="3" placeholder="123 Main St, Apt 4B, New York, NY"></textarea>
+      </div>
+
+      <h3 style="font-family: var(--font-display); font-size: 16px; margin: 24px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+        Change Password (Optional)
+      </h3>
+
+      <div class="field">
+        <label>New Password</label>
+        <input type="password" id="prof-pass" placeholder="Min. 6 characters" />
+      </div>
+
+      <div class="field">
+        <label>Confirm New Password</label>
+        <input type="password" id="prof-pass-confirm" placeholder="Re-enter password" />
+      </div>
+
+      <button class="btn btn-block" type="submit" style="margin-top: 10px;">Update Profile</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    &copy; 2026 The Provisioner. Designed and developed as a complete full-stack portfolio e-commerce application.
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  renderNav();
+  
+  if (requireLogin()) {
+    const user = getCurrentUser();
+    document.getElementById("prof-name").value = user.name || "";
+    document.getElementById("prof-email").value = user.email || "";
+    document.getElementById("prof-phone").value = user.phone || "";
+    document.getElementById("prof-address").value = user.default_address || "";
+
+    document.getElementById("profile-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const statusDiv = document.getElementById("profile-status");
+      statusDiv.innerHTML = "";
+
+      const name = document.getElementById("prof-name").value.trim();
+      const email = document.getElementById("prof-email").value.trim();
+      const phone = document.getElementById("prof-phone").value.trim();
+      const default_address = document.getElementById("prof-address").value.trim();
+      const password = document.getElementById("prof-pass").value;
+      const confirmPass = document.getElementById("prof-pass-confirm").value;
+
+      if (password) {
+        if (password.length < 6) {
+          statusDiv.innerHTML = `<div class="error-text">Password must be at least 6 characters.</div>`;
+          return;
+        }
+        if (password !== confirmPass) {
+          statusDiv.innerHTML = `<div class="error-text">Passwords do not match.</div>`;
+          return;
+        }
+      }
+
+      try {
+        const payload = { name, email, phone, default_address };
+        if (password) payload.password = password;
+
+        await updateCustomerProfile(payload);
+        showToast("Profile updated successfully!");
+        statusDiv.innerHTML = `<div style="background: var(--success-light); color: var(--success); padding: 10px; border-radius: var(--radius-sm); font-size: 14px; text-align: center;">Profile updated successfully!</div>`;
+        
+        // Clear password inputs
+        document.getElementById("prof-pass").value = "";
+        document.getElementById("prof-pass-confirm").value = "";
+        
+        // Rerender Nav in case name changed
+        renderNav();
+      } catch (err) {
+        statusDiv.innerHTML = `<div class="error-text">${err.message}</div>`;
+      }
+    });
+  }
+</script>
+</body>
+</html>
